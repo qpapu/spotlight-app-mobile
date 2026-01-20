@@ -1,51 +1,65 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { Appearance, ColorSchemeName } from "react-native";
-import { useStorageState } from "../hooks/UseStorageState";
+import { useStorageState } from "@/hooks/UseStorageState";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { useColorScheme } from "react-native";
 
-// Define the shape of the theme context
+type Theme = "light" | "dark";
+
 interface ThemeContextType {
-  theme: ColorSchemeName;
-  setTheme: (theme: ColorSchemeName) => void;
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+  systemTheme: Theme | null;
 }
 
-// Create the ThemeContext with default values
-const ThemeContext = createContext<ThemeContextType>({
-  theme: "light",
-  setTheme: () => {},
-});
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const THEME_STORAGE_KEY = "preferred_theme";
 
-// Create a custom hook to use the ThemeContext
-export const useTheme = () => useContext(ThemeContext);
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const systemColorScheme = useColorScheme();
+  const [[isLoading, savedTheme], setSavedTheme] =
+    useStorageState(THEME_STORAGE_KEY);
+  const [theme, setThemeState] = useState<Theme>("dark");
 
-// Create the ThemeProvider component
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [[isLoading, storedTheme], setStoredTheme] =
-    useStorageState("app-theme");
-  const [theme, setThemeState] = useState<ColorSchemeName>("light");
-
-  // Load the theme from storage or system preference on mount
   useEffect(() => {
-    if (!isLoading) {
-      if (storedTheme) {
-        setThemeState(storedTheme as ColorSchemeName);
-      } else {
-        const systemTheme = Appearance.getColorScheme() || "light";
-        setThemeState(systemTheme);
-      }
-    }
-  }, [isLoading, storedTheme]);
+    if (isLoading) return;
 
-  // Function to update the theme
-  const setTheme = (newTheme: ColorSchemeName) => {
+    if (savedTheme) {
+      // User preference takes precedence
+      setThemeState(savedTheme as Theme);
+    } else if (systemColorScheme) {
+      // Use system theme if no saved preference
+      setThemeState(systemColorScheme as Theme);
+    } else {
+      // Fallback to dark theme
+      setThemeState("dark");
+    }
+  }, [isLoading, savedTheme, systemColorScheme]);
+
+  const handleSetTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    setStoredTheme(newTheme || null);
+    setSavedTheme(newTheme);
   };
 
+  if (isLoading) {
+    return null;
+  }
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        setTheme: handleSetTheme,
+        systemTheme: systemColorScheme as Theme | null,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
-};
+}
+
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error("useTheme must be used within ThemeProvider");
+  }
+  return context;
+}
