@@ -1,6 +1,10 @@
+import "@/assets/css/global.css";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { Stack } from "expo-router";
-import "../assets/css/global.css";
-
 export default function RootLayout() {
-  return <Stack />;
+  return (
+    <ThemeProvider>
+      <Stack />
+    </ThemeProvider>
+  );
 }
