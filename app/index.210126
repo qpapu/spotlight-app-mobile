@@ -1,0 +1,88 @@
+import { useTheme } from "@/context/ThemeContext";
+import { Image, Pressable, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+export default function Index() {
+  const { theme, setTheme, systemTheme } = useTheme();
+
+  type Feature = {
+    icon: string;
+    text: string;
+    description: string;
+  };
+
+  const features: Feature[] = [
+    {
+      icon: "⚡️",
+      text: "Fast Performance",
+      description:
+        "Experience lightning-fast load times and smooth interactions.",
+    },
+    {
+      icon: "🔒",
+      text: "Secure",
+      description: "Your data is protected with top-notch security measures.",
+    },
+    {
+      icon: "🌐",
+      text: "Cross-Platform",
+      description: "Works seamlessly on all your devices.",
+    },
+    {
+      icon: "🎨",
+      text: "Customizable",
+      description: "Tailor the app to your preferences.",
+    },
+  ];
+
+  return (
+    <SafeAreaView
+      className={`flex-1 ${theme === "dark" ? "bg-black" : "bg-white"}`}
+    >
+      <View
+        className={`flex-1 items-center justify-center ${theme === "dark" ? "bg-gray-900" : "bg-white"}`}
+      >
+        <Image
+          // source={require("@/assets/images/landing.png")}
+          className="w-[120px] h-[120px] mb-6"
+          resizeMode="contain"
+        />
+        <Text
+          className={`text-[28px] font-bold text-center mb-3 ${theme === "dark" ? "text-white" : "text-black"}`}
+        >
+          PigaPictCha
+        </Text>
+
+        <Text className={theme === "dark" ? "text-white" : "text-purple-950"}>
+          Edit app/index.tsx to edit this screen.
+        </Text>
+
+        <Text
+          className={`mt-4 text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+        >
+          System Theme: {systemTheme || "Not detected"}
+        </Text>
+
+        <View className="mt-6 gap-2">
+          <Pressable
+            onPress={() => setTheme("light")}
+            className={`px-4 py-2 rounded ${theme === "light" ? "bg-purple-950" : "bg-gray-300"}`}
+          >
+            <Text className={theme === "light" ? "text-white" : "text-black"}>
+              Light Theme
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => setTheme("dark")}
+            className={`px-4 py-2 rounded ${theme === "dark" ? "bg-purple-950" : "bg-gray-300"}`}
+          >
+            <Text className={theme === "dark" ? "text-white" : "text-black"}>
+              Dark Theme
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
